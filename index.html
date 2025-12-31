@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARISE - Sistema de Evolução</title>
+    <!-- Ícones do site -->
+    <link rel="icon" type="image/png" sizes="32x32" href="img/ARISE.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/ARISE.png">
+
+    <!-- Atalho iPhone -->
+    <link rel="apple-touch-icon" href="img/ARISE.png">
+
+    <!-- Android / PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00d4ff">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="img/ARISE.png" alt="ARISE" class="logo-img">
+        </div>
+        <div class="futuristic-clock" id="futuristicClock">
+            <div class="clock-display">
+                <span class="clock-time" id="clockTime">00:00:00</span>
+                <span class="clock-date" id="clockDate">01/01/2024</span>
+            </div>
+            <div class="clock-location" id="clockLocation">🌍 ---</div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="showProfileModal()" title="Perfil">
+                <i class="fas fa-user-cog"></i>
+            </button>
+            <button class="icon-btn" onclick="showHelpModal()" title="Ajuda">
+                <i class="fas fa-question-circle"></i>
+            </button>
+            <button class="icon-btn" onclick="showDataModal()" title="Dados">
+                <i class="fas fa-database"></i>
+            </button>
+            <button class="icon-btn" onclick="toggleSound()" id="soundBtn" title="Som">
+                <i class="fas fa-volume-up"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Player Card -->
+        <section class="player-card">
+            <div class="player-header">
+                <div class="player-avatar">
+                    <i class="fas fa-user-ninja"></i>
+                </div>
+                <div class="player-info">
+                    <div class="player-name" onclick="showNameModal()">
+                        <span id="playerName">Caçador</span>
+                        <i class="fas fa-edit edit-icon"></i>
+                    </div>
+                    <div class="player-rank" id="playerRank">
+                        <i class="fas fa-crown"></i>
+                        <span>RANK E</span>
+                    </div>
+                </div>
+                <div class="player-level">
+                    <div>
+                        <div class="level-label">Nível</div>
+                        <div class="level-badge" id="playerLevel">1</div>
+                    </div>
+                </div>
+            </div>
+            <div class="xp-container">
+                <div class="xp-header">
+                    <span>XP: <strong id="currentXP">0</strong> / <span id="requiredXP">100</span></span>
+                    <span id="xpPercent">0%</span>
+                </div>
+                <div class="xp-bar">
+                    <div class="xp-fill" id="xpFill" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="streak-container">
+                <i class="fas fa-fire-alt streak-icon"></i>
+                <span class="streak-count" id="streakCount">0</span>
+                <span class="streak-label">dias em sequência</span>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats-section">
+            <h2 class="section-title"><i class="fas fa-chart-bar"></i> Status</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon stat-strength"><i class="fas fa-dumbbell"></i></div>
+                    <div class="stat-value" id="statStrength">0</div>
+                    <div class="stat-name">Força</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon stat-discipline"><i class="fas fa-brain"></i></div>
+                    <div class="stat-value" id="statDiscipline">0</div>
+                    <div class="stat-name">Disciplina</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon stat-vitality"><i class="fas fa-heart"></i></div>
+                    <div class="stat-value" id="statVitality">0</div>
+                    <div class="stat-name">Vitalidade</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon stat-resistance"><i class="fas fa-running"></i></div>
+                    <div class="stat-value" id="statResistance">0</div>
+                    <div class="stat-name">Resistência</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon stat-knowledge"><i class="fas fa-book"></i></div>
+                    <div class="stat-value" id="statKnowledge">0</div>
+                    <div class="stat-name">Conhecimento</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('quests')">
+                <i class="fas fa-scroll"></i> Missões
+            </button>
+            <button class="nav-tab" onclick="showTab('achievements')">
+                <i class="fas fa-trophy"></i> Conquistas
+            </button>
+            <button class="nav-tab" onclick="showTab('history')">
+                <i class="fas fa-history"></i> Histórico
+            </button>
+        </div>
+
+        <!-- Quests Tab -->
+        <section class="quests-container" id="questsTab">
+            <h2 class="section-title"><i class="fas fa-scroll"></i> Missões Diárias</h2>
+            <div class="quest-list" id="questList">
+                <!-- Quests will be rendered here -->
+            </div>
+            <button class="add-quest-btn" onclick="showQuestModal()">
+                <i class="fas fa-plus"></i> Adicionar Nova Missão
+            </button>
+        </section>
+
+        <!-- Achievements Tab -->
+        <section class="quests-container" id="achievementsTab" style="display: none;">
+            <h2 class="section-title"><i class="fas fa-trophy"></i> Conquistas</h2>
+            <div class="achievements-grid" id="achievementsList">
+                <!-- Achievements will be rendered here -->
+            </div>
+        </section>
+
+        <!-- History Tab -->
+        <section class="quests-container" id="historyTab" style="display: none;">
+            <h2 class="section-title"><i class="fas fa-history"></i> Histórico</h2>
+            <div class="history-list" id="historyList">
+                <!-- History will be rendered here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Level Up Overlay -->
+    <div class="levelup-overlay" id="levelUpOverlay">
+        <div class="levelup-content">
+            <div class="levelup-title">LEVEL UP!</div>
+            <div class="levelup-level" id="levelUpLevel">2</div>
+            <div class="levelup-subtitle" id="levelUpSubtitle">Você evoluiu!</div>
+            <div class="levelup-actions">
+                <button class="btn btn-primary" onclick="shareLevelUp()">
+                    <i class="fas fa-share-alt"></i> Compartilhar
+                </button>
+                <button class="btn btn-secondary" onclick="closeLevelUp()">
+                    <i class="fas fa-times"></i> Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-question-circle"></i> Central de Ajuda</h2>
+                <button class="modal-close" onclick="closeModal('helpModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h3>🎮 O que é o ARISE?</h3>
+                    <p>ARISE é um sistema de gamificação da vida real inspirado no anime Solo Leveling. Transforme suas tarefas diárias em missões, ganhe XP, suba de nível e evolua como um verdadeiro caçador!</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>⚔️ Como Funciona?</h3>
+                    <ul>
+                        <li><strong>Crie Missões:</strong> Adicione suas tarefas diárias como missões</li>
+                        <li><strong>Complete Missões:</strong> Ao completar, você ganha XP e evolui seus status</li>
+                        <li><strong>Suba de Nível:</strong> Acumule XP para subir de level</li>
+                        <li><strong>Evolua seu Rank:</strong> Quanto maior seu level, maior seu rank</li>
+                        <li><strong>Mantenha o Streak:</strong> Complete missões todos os dias para manter sua sequência</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>📊 Sistema de XP e Níveis</h3>
+                    <p>O XP necessário para cada nível segue a fórmula: <strong>Nível × Nível × 100</strong></p>
+                    <table class="help-table">
+                        <tr><th>Nível</th><th>XP Necessário</th></tr>
+                        <tr><td>1 → 2</td><td>100 XP</td></tr>
+                        <tr><td>2 → 3</td><td>400 XP</td></tr>
+                        <tr><td>3 → 4</td><td>900 XP</td></tr>
+                        <tr><td>4 → 5</td><td>1.600 XP</td></tr>
+                        <tr><td>5 → 6</td><td>2.500 XP</td></tr>
+                    </table>
+                </div>
+
+                <div class="help-section">
+                    <h3>🏆 Sistema de Ranks</h3>
+                    <table class="help-table">
+                        <tr><th>Rank</th><th>Nível Mínimo</th></tr>
+                        <tr><td>E</td><td>1</td></tr>
+                        <tr><td>D</td><td>5</td></tr>
+                        <tr><td>C</td><td>10</td></tr>
+                        <tr><td>B</td><td>20</td></tr>
+                        <tr><td>A</td><td>35</td></tr>
+                        <tr><td>S</td><td>50</td></tr>
+                        <tr><td>SS</td><td>75</td></tr>
+                        <tr><td>SSS</td><td>100</td></tr>
+                        <tr><td>NATIONAL</td><td>150</td></tr>
+                    </table>
+                </div>
+
+                <div class="help-section">
+                    <h3>💪 Status</h3>
+                    <ul>
+                        <li><strong>Força:</strong> Aumenta com treinos e exercícios físicos</li>
+                        <li><strong>Disciplina:</strong> Aumenta ao completar qualquer missão</li>
+                        <li><strong>Vitalidade:</strong> Aumenta com água, sono e alimentação</li>
+                        <li><strong>Resistência:</strong> Aumenta com cardio e atividades de resistência</li>
+                        <li><strong>Conhecimento:</strong> Aumenta com estudo e leitura</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>🔥 Sistema de Streak</h3>
+                    <p>Complete pelo menos uma missão por dia para manter seu streak. Quanto maior o streak, maiores os bônus:</p>
+                    <ul>
+                        <li>7 dias: +10% XP bônus</li>
+                        <li>14 dias: +20% XP bônus</li>
+                        <li>30 dias: +30% XP bônus</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>⚠️ Sistema de Penalidades</h3>
+                    <p><strong>CUIDADO!</strong> Se você não completar TODAS as suas missões diárias, receberá penalidades no dia seguinte!</p>
+                    <ul>
+                        <li>Missões de penalidade são <strong>BLOQUEADAS</strong> - você não pode editar ou excluir</li>
+                        <li>Quanto mais missões falhar, mais penalidades receberá (máximo 3)</li>
+                        <li>Penalidades são aleatórias e mais difíceis que missões normais</li>
+                        <li>Complete as penalidades para ganhar XP e se redimir!</li>
+                    </ul>
+                    <p>Exemplos de penalidades: Beber 3L de água, 50 flexões, Correr 3km, Estudar 2 horas, etc.</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>↩️ Desmarcar Missões</h3>
+                    <p>Se marcar uma missão por engano, você pode desmarcá-la clicando novamente. Isso irá:</p>
+                    <ul>
+                        <li>Remover o XP ganho</li>
+                        <li>Remover os pontos de status</li>
+                        <li>Remover a entrada do histórico</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>💾 Salvamento de Dados</h3>
+                    <p>Seus dados ficam na memória durante a sessão. <strong>Use a opção Exportar</strong> para fazer backup do seu progresso e <strong>Importar</strong> para restaurá-lo quando voltar ao sistema.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Modal -->
+    <div class="modal-overlay" id="dataModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-database"></i> Gerenciar Dados</h2>
+                <button class="modal-close" onclick="closeModal('dataModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h3>📤 Exportar Dados</h3>
+                    <p>Faça backup do seu progresso para um arquivo JSON.</p>
+                    <button class="btn btn-primary" onclick="exportData()" style="margin-top: 0.5rem;">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+
+                <div class="help-section">
+                    <h3>📥 Importar Dados</h3>
+                    <p>Restaure seu progresso a partir de um arquivo de backup.</p>
+                    <input type="file" id="importInput" class="import-input" accept=".json" onchange="importData(event)">
+                    <button class="btn btn-secondary" onclick="document.getElementById('importInput').click()" style="margin-top: 0.5rem;">
+                        <i class="fas fa-upload"></i> Importar
+                    </button>
+                </div>
+
+                <div class="help-section">
+                    <h3>🔄 Resetar Progresso</h3>
+                    <p>Cuidado! Esta ação irá apagar todo o seu progresso.</p>
+                    <button class="btn btn-danger" onclick="confirmReset()" style="margin-top: 0.5rem;">
+                        <i class="fas fa-trash"></i> Resetar Tudo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Name Modal -->
+    <div class="modal-overlay" id="nameModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-user"></i> Seu Nome de Caçador</h2>
+                <button class="modal-close" onclick="closeModal('nameModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nome</label>
+                    <input type="text" class="form-input" id="nameInput" placeholder="Digite seu nome..." maxlength="20">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('nameModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveName()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-user-cog"></i> Perfil do Caçador</h2>
+                <button class="modal-close" onclick="closeModal('profileModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nome</label>
+                    <input type="text" class="form-input" id="profileName" placeholder="Seu nome..." maxlength="20">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Idade</label>
+                        <input type="number" class="form-input" id="profileAge" placeholder="25" min="1" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">País</label>
+                        <select class="form-select" id="profileCountry">
+                            <option value="America/Sao_Paulo">🇧🇷 Brasil</option>
+                            <option value="America/New_York">🇺🇸 EUA (Leste)</option>
+                            <option value="America/Los_Angeles">🇺🇸 EUA (Oeste)</option>
+                            <option value="Europe/London">🇬🇧 Reino Unido</option>
+                            <option value="Europe/Paris">🇫🇷 França</option>
+                            <option value="Europe/Berlin">🇩🇪 Alemanha</option>
+                            <option value="Europe/Madrid">🇪🇸 Espanha</option>
+                            <option value="Europe/Lisbon">🇵🇹 Portugal</option>
+                            <option value="Asia/Tokyo">🇯🇵 Japão</option>
+                            <option value="Asia/Seoul">🇰🇷 Coreia do Sul</option>
+                            <option value="Asia/Shanghai">🇨🇳 China</option>
+                            <option value="Australia/Sydney">🇦🇺 Austrália</option>
+                            <option value="America/Argentina/Buenos_Aires">🇦🇷 Argentina</option>
+                            <option value="America/Mexico_City">🇲🇽 México</option>
+                            <option value="America/Bogota">🇨🇴 Colômbia</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Altura (cm)</label>
+                        <input type="number" class="form-input" id="profileHeight" placeholder="170" min="50" max="250">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Peso (kg)</label>
+                        <input type="number" class="form-input" id="profileWeight" placeholder="70" min="20" max="300" step="0.1">
+                    </div>
+                </div>
+                <div class="bmi-display" id="bmiDisplay">
+                    <div class="bmi-label">Seu IMC</div>
+                    <div class="bmi-value" id="bmiValue">--</div>
+                    <div class="bmi-category" id="bmiCategory">Preencha altura e peso</div>
+                    <div class="bmi-bar">
+                        <div class="bmi-indicator" id="bmiIndicator"></div>
+                    </div>
+                    <div class="bmi-scale">
+                        <span>Abaixo</span>
+                        <span>Normal</span>
+                        <span>Sobrepeso</span>
+                        <span>Obesidade</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('profileModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveProfile()">Salvar Perfil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quest Modal -->
+    <div class="modal-overlay" id="questModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-scroll"></i> <span id="questModalTitle">Nova Missão</span></h2>
+                <button class="modal-close" onclick="closeModal('questModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Título da Missão</label>
+                    <input type="text" class="form-input" id="questTitle" placeholder="Ex: Treinar por 30 minutos" maxlength="50">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">XP de Recompensa</label>
+                    <select class="form-select" id="questXP">
+                        <option value="10">10 XP - Muito Fácil</option>
+                        <option value="20">20 XP - Fácil</option>
+                        <option value="30">30 XP - Normal</option>
+                        <option value="50" selected>50 XP - Desafiador</option>
+                        <option value="75">75 XP - Difícil</option>
+                        <option value="100">100 XP - Muito Difícil</option>
+                        <option value="150">150 XP - Hardcore</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status que Aumenta</label>
+                    <select class="form-select" id="questStat">
+                        <option value="strength">💪 Força (Treino, Musculação)</option>
+                        <option value="discipline">🧠 Disciplina (Tarefas gerais)</option>
+                        <option value="vitality">💧 Vitalidade (Água, Sono, Alimentação)</option>
+                        <option value="resistance">🏃 Resistência (Cardio, Corrida)</option>
+                        <option value="knowledge">📘 Conhecimento (Estudo, Leitura)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo de Missão</label>
+                    <select class="form-select" id="questType">
+                        <option value="daily">✅ Diária</option>
+                        <option value="weekly">🟡 Semanal</option>
+                        <option value="challenge">🔥 Desafio</option>
+                    </select>
+                </div>
+                <input type="hidden" id="editQuestId" value="">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('questModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveQuest()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirmação</h2>
+                <button class="modal-close" onclick="closeModal('confirmModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Tem certeza que deseja fazer isso?</p>
+                <div class="confirm-actions">
+                    <button class="btn btn-secondary" onclick="closeModal('confirmModal')">Cancelar</button>
+                    <button class="btn btn-danger" id="confirmBtn" onclick="">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
