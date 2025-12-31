@@ -1,4 +1,4 @@
-  :root {
+:root {
             --primary: #00d4ff;
             --primary-glow: rgba(0, 212, 255, 0.5);
             --secondary: #7b2cbf;
@@ -34,7 +34,7 @@
             overflow-x: hidden;
         }
 
-        .logo img {
+       .logo img {
             height: 38px;
             animation: logoGlow 2s ease-in-out infinite alternate;
         }
@@ -101,18 +101,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .logo {
-            font-family: 'Cinzel', serif;
-            font-size: 1.5rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 30px var(--primary-glow);
-            letter-spacing: 4px;
         }
 
         .header-actions {
@@ -248,6 +236,175 @@
             font-size: 2rem;
             border: 2px solid var(--primary);
             box-shadow: 0 0 20px var(--primary-glow);
+            position: relative;
+            transition: all 0.5s;
+        }
+
+        /* Rank Evolution Auras */
+        .player-avatar.rank-E {
+            background: linear-gradient(135deg, #555 0%, #333 100%);
+            border-color: #666;
+            box-shadow: 0 0 10px rgba(100, 100, 100, 0.3);
+        }
+
+        .player-avatar.rank-D {
+            background: linear-gradient(135deg, #8b4513 0%, #654321 100%);
+            border-color: #a0522d;
+            box-shadow: 0 0 15px rgba(139, 69, 19, 0.4);
+        }
+
+        .player-avatar.rank-C {
+            background: linear-gradient(135deg, #228b22 0%, #006400 100%);
+            border-color: #32cd32;
+            box-shadow: 0 0 20px rgba(34, 139, 34, 0.5);
+        }
+
+        .player-avatar.rank-B {
+            background: linear-gradient(135deg, #4169e1 0%, #1e3a8a 100%);
+            border-color: #6495ed;
+            box-shadow: 0 0 25px rgba(65, 105, 225, 0.6);
+            animation: auraB 2s infinite;
+        }
+
+        @keyframes auraB {
+            0%, 100% { box-shadow: 0 0 25px rgba(65, 105, 225, 0.6); }
+            50% { box-shadow: 0 0 35px rgba(65, 105, 225, 0.8); }
+        }
+
+        .player-avatar.rank-A {
+            background: linear-gradient(135deg, #9932cc 0%, #7b2cbf 100%);
+            border-color: #ba55d3;
+            box-shadow: 0 0 30px rgba(153, 50, 204, 0.7);
+            animation: auraA 1.5s infinite;
+        }
+
+        @keyframes auraA {
+            0%, 100% { box-shadow: 0 0 30px rgba(153, 50, 204, 0.7); transform: scale(1); }
+            50% { box-shadow: 0 0 45px rgba(153, 50, 204, 0.9); transform: scale(1.02); }
+        }
+
+        .player-avatar.rank-S {
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+            border-color: #ffd700;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+            animation: auraS 1.2s infinite;
+        }
+
+        @keyframes auraS {
+            0%, 100% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); transform: scale(1); }
+            50% { box-shadow: 0 0 60px rgba(255, 215, 0, 1); transform: scale(1.05); }
+        }
+
+        .player-avatar.rank-S::after {
+            content: '✨';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 1.2rem;
+            animation: sparkle 1s infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .player-avatar.rank-SS {
+            background: linear-gradient(135deg, #ff006e 0%, #dc143c 100%);
+            border-color: #ff1493;
+            box-shadow: 0 0 50px rgba(255, 0, 110, 0.9);
+            animation: auraSS 1s infinite;
+        }
+
+        @keyframes auraSS {
+            0%, 100% { box-shadow: 0 0 50px rgba(255, 0, 110, 0.9); transform: scale(1); }
+            25% { box-shadow: 0 0 60px rgba(255, 0, 110, 1); }
+            50% { box-shadow: 0 0 70px rgba(255, 0, 110, 1); transform: scale(1.08); }
+            75% { box-shadow: 0 0 60px rgba(255, 0, 110, 1); }
+        }
+
+        .player-avatar.rank-SS::before {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 15px;
+            background: linear-gradient(45deg, #ff006e, transparent, #dc143c);
+            z-index: -1;
+            animation: rotateBorder 3s linear infinite;
+        }
+
+        @keyframes rotateBorder {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .player-avatar.rank-SSS {
+            background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 50%, #ff006e 100%);
+            border-color: #fff;
+            box-shadow: 0 0 60px rgba(0, 212, 255, 1), 0 0 100px rgba(123, 44, 191, 0.5);
+            animation: auraSSS 0.8s infinite;
+        }
+
+        @keyframes auraSSS {
+            0%, 100% { box-shadow: 0 0 60px rgba(0, 212, 255, 1), 0 0 100px rgba(123, 44, 191, 0.5); transform: scale(1); }
+            50% { box-shadow: 0 0 80px rgba(0, 212, 255, 1), 0 0 120px rgba(255, 0, 110, 0.7); transform: scale(1.1); }
+        }
+
+        .player-avatar.rank-SSS::after {
+            content: '👑';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            animation: crownFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes crownFloat {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        .player-avatar.rank-NATIONAL {
+            background: linear-gradient(135deg, #fff 0%, #ffd700 50%, #fff 100%);
+            border-color: #fff;
+            box-shadow: 0 0 80px rgba(255, 255, 255, 1), 0 0 150px rgba(255, 215, 0, 0.8);
+            animation: auraNational 0.5s infinite;
+        }
+
+        @keyframes auraNational {
+            0%, 100% { box-shadow: 0 0 80px rgba(255, 255, 255, 1), 0 0 150px rgba(255, 215, 0, 0.8); }
+            50% { box-shadow: 0 0 100px rgba(255, 255, 255, 1), 0 0 200px rgba(255, 215, 0, 1); }
+        }
+
+        /* Failure Status */
+        .player-avatar.status-lazy {
+            filter: grayscale(0.5);
+            opacity: 0.8;
+        }
+
+        .player-avatar.status-lazy::after {
+            content: '💀';
+            position: absolute;
+            bottom: -8px;
+            right: -8px;
+            font-size: 1.2rem;
+        }
+
+        .failure-badge {
+            background: linear-gradient(135deg, var(--danger), #ff6600);
+            color: #fff;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+            animation: failurePulse 1s infinite;
+        }
+
+        @keyframes failurePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .player-info {
@@ -1229,6 +1386,162 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
+        }
+
+        /* Weekly Challenge Card */
+        .weekly-challenge {
+            background: linear-gradient(135deg, rgba(123, 44, 191, 0.2) 0%, rgba(0, 212, 255, 0.2) 100%);
+            border: 1px solid var(--secondary);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .weekly-challenge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+        }
+
+        .weekly-challenge-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+
+        .weekly-challenge-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .weekly-challenge-reward {
+            background: linear-gradient(135deg, var(--gold), #ff8c00);
+            color: #000;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .weekly-challenge-progress {
+            margin-bottom: 0.5rem;
+        }
+
+        .weekly-challenge-bar {
+            height: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .weekly-challenge-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .weekly-challenge-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 0.3rem;
+        }
+
+        /* System Notification (Soul-hitting) */
+        .system-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, rgba(10, 10, 15, 0.98), rgba(20, 20, 30, 0.98));
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 2rem;
+            z-index: 3000;
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .system-notification.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .system-notification::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--primary));
+            border-radius: 18px;
+            z-index: -1;
+            animation: borderRotate 4s linear infinite;
+        }
+
+        @keyframes borderRotate {
+            from { filter: hue-rotate(0deg); }
+            to { filter: hue-rotate(360deg); }
+        }
+
+        .system-notification-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: iconPulse 1s infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .system-notification-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 0.5rem;
+        }
+
+        .system-notification-message {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.4;
+            margin-bottom: 1.5rem;
+        }
+
+        .system-notification-close {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .system-notification-close:hover {
+            background: var(--primary);
+            color: #000;
         }
 
         /* BMI Display */

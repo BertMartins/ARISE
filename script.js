@@ -1,4 +1,4 @@
- // ========== AUDIO SYSTEM ==========
+    // ========== AUDIO SYSTEM ==========
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
         let soundEnabled = true;
@@ -144,17 +144,50 @@
             ],
             history: [],
             questsCompleted: 0,
-            nextQuestId: 6
+            nextQuestId: 6,
+            weeklyChallenge: {
+                weekNumber: 0,
+                type: null,
+                progress: 0,
+                target: 10,
+                reward: 500,
+                completed: false
+            },
+            consecutiveFailures: 0,
+            isLazyStatus: false,
+            weeklyQuestsCompleted: 0
         };
 
         let gameData = JSON.parse(JSON.stringify(defaultData));
 
-        // In-memory storage (use export/import for persistence)
         function loadData() {
-            // Data is in-memory only - use export/import for persistence
+            try {
+                const saved = localStorage.getItem('arise_gameData');
+
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+
+                    gameData = {
+                        ...defaultData,
+                        ...parsed,
+                        player: {
+                            ...defaultData.player,
+                            ...parsed.player,
+                            stats: {
+                                ...defaultData.player.stats,
+                                ...parsed.player?.stats
+                            }
+                        }
+                    };
+                }
+            } catch (e) {
+                console.error('Erro ao carregar dados:', e);
+            }
+
             checkStreak();
             updateUI();
         }
+
 
         function loadFromJSON(parsed) {
             gameData = { ...defaultData, ...parsed };
@@ -171,7 +204,11 @@
         }
 
         function saveData() {
-            // Data is kept in-memory - use export to save
+            try {
+                localStorage.setItem('arise_gameData', JSON.stringify(gameData));
+            } catch (e) {
+                console.error('Erro ao salvar dados:', e);
+            }
         }
 
         // ========== GAME LOGIC ==========
@@ -307,6 +344,22 @@
 
             // Add history
             addHistory('quest', quest.title, quest.xp);
+
+            // Update weekly challenge progress
+            incrementWeeklyProgress(quest.stat);
+
+            // Check if this was a recovery mission (clears lazy status)
+            if (quest.isRecovery && gameData.isLazyStatus) {
+                deactivateLazyStatus();
+            }
+
+            // Reset consecutive failures on success
+            gameData.consecutiveFailures = 0;
+
+            // Random chance to show motivational notification
+            if (Math.random() < 0.15) {
+                setTimeout(() => showRandomNotification('success'), 500);
+            }
 
             playSound('complete');
             checkAchievements();
@@ -530,6 +583,20 @@
             rankEl.className = 'player-rank ' + rank.class;
             rankEl.innerHTML = `<i class="fas fa-crown"></i><span>RANK ${rank.name}</span>`;
 
+            // Update avatar with rank evolution
+            const avatarEl = document.querySelector('.player-avatar');
+            avatarEl.className = 'player-avatar rank-' + rank.name;
+            if (gameData.isLazyStatus) {
+                avatarEl.classList.add('status-lazy');
+            }
+
+            // Update avatar icon based on rank
+            const avatarIcons = {
+                'E': '👤', 'D': '🥷', 'C': '⚔️', 'B': '🛡️',
+                'A': '🗡️', 'S': '👑', 'SS': '💀', 'SSS': '🐉', 'NATIONAL': '⚡'
+            };
+            avatarEl.innerHTML = `<span style="position:relative;z-index:1">${avatarIcons[rank.name] || '👤'}</span>`;
+
             // Update stats
             document.getElementById('statStrength').textContent = p.stats.strength;
             document.getElementById('statDiscipline').textContent = p.stats.discipline;
@@ -540,6 +607,7 @@
             renderQuests();
             renderAchievements();
             renderHistory();
+            updateWeeklyChallenge();
         }
 
         function renderQuests() {
@@ -1068,6 +1136,246 @@
             return incompleteDailyQuests.length;
         }
 
+        // ========== WEEKLY CHALLENGE SYSTEM ==========
+        const weeklyChallenges = [
+            { type: 'discipline', name: '🧠 Semana da Disciplina', target: 10, reward: 500, stat: 'discipline', desc: 'Complete 10 missões' },
+            { type: 'body', name: '💪 Semana do Corpo', target: 7, reward: 600, stat: 'strength', desc: 'Complete 7 treinos' },
+            { type: 'focus', name: '🎯 Semana do Foco', target: 5, reward: 400, stat: 'knowledge', desc: 'Estude por 5 dias' },
+            { type: 'vitality', name: '💧 Semana da Vitalidade', target: 14, reward: 550, stat: 'vitality', desc: 'Complete 14 missões de saúde' },
+            { type: 'resistance', name: '🏃 Semana da Resistência', target: 8, reward: 650, stat: 'resistance', desc: 'Complete 8 cardios' },
+            { type: 'all', name: '⚔️ Semana do Guerreiro', target: 15, reward: 800, stat: null, desc: 'Complete 15 missões totais' }
+        ];
+
+        function getWeekNumber() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 1);
+            const diff = now - start;
+            const oneWeek = 1000 * 60 * 60 * 24 * 7;
+            return Math.floor(diff / oneWeek);
+        }
+
+        function initWeeklyChallenge() {
+            const currentWeek = getWeekNumber();
+
+            if (
+                gameData.weeklyChallenge &&
+                gameData.weeklyChallenge.weekNumber === currentWeek
+            ) {
+                return;
+            }
+
+            const randomChallenge = weeklyChallenges[
+                Math.floor(Math.random() * weeklyChallenges.length)
+            ];
+
+            gameData.weeklyChallenge = {
+                weekNumber: currentWeek,
+                type: randomChallenge.type,
+                name: randomChallenge.name,
+                target: randomChallenge.target,
+                reward: randomChallenge.reward,
+                stat: randomChallenge.stat,
+                desc: randomChallenge.desc,
+                progress: 0,
+                completed: false
+            };
+
+            saveData();
+
+            setTimeout(() => {
+                showSystemNotification(
+                    '🏆',
+                    `Novo desafio semanal: ${randomChallenge.name}!`
+                );
+            }, 1000);
+        }
+
+        function updateWeeklyChallenge() {
+            const wc = gameData.weeklyChallenge;
+            if (!wc || !wc.name) return;
+
+            const progress = Math.min(wc.progress, wc.target);
+            const percent = (progress / wc.target) * 100;
+
+            document.getElementById('weeklyChallengeTitle').textContent = wc.name;
+            document.getElementById('weeklyChallengeReward').textContent = `+${wc.reward} XP`;
+            document.getElementById('weeklyChallengeProgress').textContent =
+                `${progress} / ${wc.target}`;
+
+            document.getElementById('weeklyChallengeFill').style.width = percent + '%';
+
+            const now = new Date();
+            const day = now.getDay();
+            const daysLeft = 7 - day;
+
+            const endOfWeek = new Date(now);
+            endOfWeek.setDate(now.getDate() + daysLeft);
+            endOfWeek.setHours(23, 59, 59, 999);
+
+            const diff = endOfWeek - now;
+            const daysRemaining = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+
+            document.getElementById('weeklyChallengeTime').textContent =
+                wc.completed
+                    ? '✅ Completo!'
+                    : `Termina em: ${daysRemaining} dia${daysRemaining !== 1 ? 's' : ''}`;
+        }
+
+       function incrementWeeklyProgress(questStat) {
+            const wc = gameData.weeklyChallenge;
+            if (!wc || wc.completed) return;
+
+            let count = false;
+
+            // desafio genérico
+            if (!wc.stat) count = true;
+
+            // desafio por atributo
+            if (wc.stat && wc.stat === questStat) count = true;
+
+            if (!count) return;
+
+            wc.progress++;
+
+            if (wc.progress >= wc.target) {
+                wc.completed = true;
+
+                gameData.player.xp += wc.reward;
+                gameData.player.totalXPEarned += wc.reward;
+
+                addHistory('achievement', `Desafio semanal concluído`);
+
+                showSystemNotification(
+                    '🏆',
+                    `Desafio semanal concluído! +${wc.reward} XP`
+                );
+
+                playSound('achievement');
+            }
+
+            saveData();
+        }
+
+        // ========== FAILURE SYSTEM (Humiliating but Funny) ==========
+        const lazyRecoveryMissions = [
+            { title: '😅 Arrumar o quarto', xp: 15, stat: 'discipline' },
+            { title: '😅 Beber um copo de água AGORA', xp: 10, stat: 'vitality' },
+            { title: '😅 Caminhar 10 minutos', xp: 20, stat: 'resistance' },
+            { title: '😅 Fazer 10 polichinelos', xp: 15, stat: 'strength' },
+            { title: '😅 Ler 5 páginas de um livro', xp: 15, stat: 'knowledge' },
+            { title: '😅 Alongar por 5 minutos', xp: 10, stat: 'vitality' },
+            { title: '😅 Organizar a mesa', xp: 15, stat: 'discipline' },
+            { title: '😅 Lavar a louça', xp: 20, stat: 'discipline' }
+        ];
+
+        function checkFailureStatus() {
+            // Check if user has too many consecutive failures
+            if (gameData.consecutiveFailures >= 3 && !gameData.isLazyStatus) {
+                activateLazyStatus();
+            }
+        }
+
+        function activateLazyStatus() {
+            gameData.isLazyStatus = true;
+
+            // Add recovery mission
+            const recovery = lazyRecoveryMissions[Math.floor(Math.random() * lazyRecoveryMissions.length)];
+            gameData.quests.unshift({
+                id: gameData.nextQuestId++,
+                title: recovery.title,
+                xp: recovery.xp,
+                stat: recovery.stat,
+                type: 'daily',
+                completed: false,
+                isRecovery: true
+            });
+
+            addHistory('penalty', 'Status: Desleixado ativado!');
+            saveData();
+
+            showSystemNotification('💀', 'Status: DESLEIXADO\n\nO Sistema detectou falta de disciplina.\nComplete a missão de recuperação.');
+        }
+
+        function deactivateLazyStatus() {
+            gameData.isLazyStatus = false;
+            gameData.consecutiveFailures = 0;
+            saveData();
+            showToast('Status Recuperado!', 'Você voltou ao normal', 'success');
+        }
+
+        // ========== SOLO LEVELING NOTIFICATIONS ==========
+        const soulHittingMessages = {
+            welcome: [
+                { icon: '⚔️', msg: 'Bem-vindo de volta, Caçador.' },
+                { icon: '👁️', msg: 'O Sistema está observando.' },
+                { icon: '🌑', msg: 'Mais um dia para evoluir.' },
+                { icon: '💀', msg: 'A fraqueza não é uma opção.' }
+            ],
+            motivation: [
+                { icon: '🔥', msg: 'Hoje é dia de evoluir.' },
+                { icon: '⚡', msg: 'Cada missão te torna mais forte.' },
+                { icon: '🗡️', msg: 'Lute como se sua vida dependesse disso.' },
+                { icon: '🛡️', msg: 'A disciplina é sua armadura.' }
+            ],
+            warning: [
+                { icon: '⚠️', msg: 'Você está ficando para trás…' },
+                { icon: '💀', msg: 'Um caçador fraco não sobrevive.' },
+                { icon: '👁️', msg: 'O Sistema não tolera preguiça.' },
+                { icon: '⏰', msg: 'O tempo não espera ninguém.' }
+            ],
+            failure: [
+                { icon: '💔', msg: 'Você falhou. Mas pode tentar novamente.' },
+                { icon: '🌧️', msg: 'A derrota de hoje forja a vitória de amanhã.' },
+                { icon: '💀', msg: 'Fraqueza detectada. Hora de melhorar.' }
+            ],
+            success: [
+                { icon: '✨', msg: 'Missão concluída. Continue assim.' },
+                { icon: '⚔️', msg: 'Você está evoluindo.' },
+                { icon: '🔥', msg: 'O fogo da disciplina queima forte.' }
+            ],
+            streak: [
+                { icon: '🔥', msg: 'Seu streak está em chamas!' },
+                { icon: '💪', msg: 'Consistência é a chave do poder.' },
+                { icon: '⚡', msg: 'Você é imparável.' }
+            ]
+        };
+
+        function showSystemNotification(icon, message) {
+            const notification = document.getElementById('systemNotification');
+            document.getElementById('systemNotificationIcon').textContent = icon;
+            document.getElementById('systemNotificationMessage').textContent = message;
+            notification.classList.add('active');
+            playSound('achievement');
+        }
+
+        function closeSystemNotification() {
+            document.getElementById('systemNotification').classList.remove('active');
+            playSound('click');
+        }
+
+        function showRandomNotification(type) {
+            const messages = soulHittingMessages[type];
+            if (!messages || messages.length === 0) return;
+
+            const random = messages[Math.floor(Math.random() * messages.length)];
+            showSystemNotification(random.icon, random.msg);
+        }
+
+        function showWelcomeNotification() {
+            const hour = new Date().getHours();
+            let type = 'welcome';
+
+            if (hour < 6) {
+                showSystemNotification('🌙', 'Madrugada? Um verdadeiro caçador não descansa.');
+            } else if (hour < 12) {
+                showSystemNotification('☀️', 'Bom dia, Caçador. Hora de evoluir.');
+            } else if (hour < 18) {
+                showRandomNotification('motivation');
+            } else {
+                showSystemNotification('🌅', 'Anoiteceu. Ainda dá tempo de completar suas missões.');
+            }
+        }
+
         // ========== CLOCK SYSTEM ==========
         const countryNames = {
             'America/Sao_Paulo': '🇧🇷 Brasil',
@@ -1185,35 +1493,74 @@
 
         // ========== INIT ==========
         document.addEventListener('DOMContentLoaded', () => {
+
+            // =========================
+            // INICIALIZAÇÃO GERAL
+            // =========================
             createParticles();
-            loadData();
+
+            loadData();             
+            initWeeklyChallenge();   
             checkDailyReset();
             checkPenalty();
+            checkFailureStatus();
 
-            // Start clock
+            updateWeeklyChallenge();
+            updateUI();
+
+            // =========================
+            // RELÓGIO
+            // =========================
             updateClock();
             setInterval(updateClock, 1000);
 
-            // Close modals on overlay click
+            // Atualiza o desafio semanal a cada minuto
+            setInterval(updateWeeklyChallenge, 60000);
+
+            // =========================
+            // NOTIFICAÇÃO INICIAL
+            // =========================
+            setTimeout(() => {
+                showWelcomeNotification();
+            }, 1500);
+
+            // =========================
+            // FECHAR MODAIS
+            // =========================
             document.querySelectorAll('.modal-overlay').forEach(overlay => {
-                overlay.addEventListener('click', (e) => {
+                overlay.addEventListener('click', e => {
                     if (e.target === overlay) {
                         overlay.classList.remove('active');
                     }
                 });
             });
 
-            // Enter key for name input
-            document.getElementById('nameInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') saveName();
-            });
+            // =========================
+            // FECHAR NOTIFICAÇÃO DO SISTEMA
+            // =========================
+            document.getElementById('systemNotification')
+                ?.addEventListener('click', e => {
+                    if (e.target.id === 'systemNotification') {
+                        closeSystemNotification();
+                    }
+                });
 
-            // Enter key for quest title
-            document.getElementById('questTitle').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') saveQuest();
-            });
+            // =========================
+            // INPUTS
+            // =========================
+            document.getElementById('nameInput')
+                ?.addEventListener('keypress', e => {
+                    if (e.key === 'Enter') saveName();
+                });
 
-            // IMC
-            document.getElementById('profileHeight').addEventListener('input', updateBMIDisplay);
-            document.getElementById('profileWeight').addEventListener('input', updateBMIDisplay);
+            document.getElementById('questTitle')
+                ?.addEventListener('keypress', e => {
+                    if (e.key === 'Enter') saveQuest();
+                });
+
+            document.getElementById('profileHeight')
+                ?.addEventListener('input', updateBMIDisplay);
+
+            document.getElementById('profileWeight')
+                ?.addEventListener('input', updateBMIDisplay);
         });
