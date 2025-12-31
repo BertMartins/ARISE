@@ -171,10 +171,32 @@
 
         <!-- Quests Tab -->
         <section class="quests-container" id="questsTab">
-            <h2 class="section-title"><i class="fas fa-scroll"></i> Missões Diárias</h2>
-            <div class="quest-list" id="questList">
-                <!-- Quests will be rendered here -->
+            <h2 class="section-title">
+                <i class="fas fa-scroll"></i> Missões Diárias
+            </h2>
+
+            <!-- 📋 MISSÕES -->
+            <div class="quest-list" id="questList"></div>
+
+            <!-- 💧 ÁGUA -->
+            <div class="water-container">
+                <h4>💧 Hidratação</h4>
+
+                <div class="water-bar">
+                    <div class="water-fill" id="waterFill"></div>
+                </div>
+
+                <div class="water-text" id="waterText">0ml / 0ml</div>
+
+                <!-- BOTÕES -->
+                <div class="water-buttons">
+                    <button onclick="drinkWater(200)">🥤 200ml</button>
+                    <button onclick="drinkWater(300)">🥛 300ml</button>
+                    <button onclick="drinkWater(500)">💧 500ml</button>
+                    <button onclick="drinkWater(1000)">🚰 1L</button>
+                </div>
             </div>
+
             <button class="add-quest-btn" onclick="showQuestModal()">
                 <i class="fas fa-plus"></i> Adicionar Nova Missão
             </button>
@@ -322,6 +344,89 @@
                             <li>14 dias → +20% XP</li>
                             <li>30 dias → +30% XP</li>
                         </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>💧 Missão de Hidratação</h3>
+
+                        <p>
+                            A <strong>hidratação</strong> é uma <strong>missão diária obrigatória</strong> no ARISE.
+                            Ela representa o cuidado com o corpo e influencia diretamente o seu progresso.
+                        </p>
+
+                        <ul>
+                            <li>✔ Conta como <strong>missão diária</strong></li>
+                            <li>✔ Contribui para o <strong>Status de Vitalidade</strong></li>
+                            <li>✔ Influencia o <strong>desafio semanal de vitalidade</strong></li>
+                            <li>✔ Pode gerar <strong>penalidades</strong> se não for concluída</li>
+                        </ul>
+
+                        <p><strong>📏 Como a meta é calculada:</strong></p>
+                        <p>
+                            A quantidade diária de água é baseada no seu peso:
+                        </p>
+
+                        <p style="text-align:center; font-weight:bold;">
+                            Peso (kg) × 35ml
+                        </p>
+
+                        <p>
+                            Exemplo:
+                        </p>
+                        <ul>
+                            <li>70kg → 2.450ml</li>
+                            <li>80kg → 2.800ml</li>
+                            <li>90kg → 3.150ml</li>
+                        </ul>
+                        
+                        <p>
+                            Para que a <strong>missão de hidratação funcione corretamente</strong>, é necessário
+                            informar o seu peso no perfil.
+                        </p>
+
+                        <p>
+                            O sistema usa o seu peso para calcular automaticamente
+                            a quantidade ideal de água que você deve beber por dia.
+                        </p>
+
+                        <p><strong>📍 Onde configurar:</strong></p>
+
+                        <ul>
+                            <li>Clique no menu do topo (Navbar)</li>
+                            <li>Acesse a opção <strong>Perfil</strong></li>
+                            <li>Informe seu peso em quilogramas (kg)</li>
+                            <li>Salve as alterações</li>
+                        </ul>
+
+                        <p>
+                            Assim que o peso for definido, o sistema calcula automaticamente
+                            sua meta diária de hidratação.
+                        </p>
+
+                        <p style="margin-top: 10px; font-weight: bold; color: #7dd3fc;">
+                            💡 Sem o peso configurado, a meta de água pode ficar incorreta.
+                            Não pule essa etapa!
+                        </p>
+
+                        <p>
+                            Conforme você registra o consumo (200ml, 300ml, 500ml ou 1L),
+                            a barra de progresso avança até completar a meta do dia.
+                        </p>
+
+                        <p>
+                            Ao completar a hidratação:
+                        </p>
+
+                        <ul>
+                            <li>✅ Ganha <strong>XP</strong></li>
+                            <li>✅ Aumenta o atributo <strong>Vitalidade</strong></li>
+                            <li>✅ Conta para o <strong>Desafio Semanal</strong></li>
+                            <li>✅ Evita penalidades no dia seguinte</li>
+                        </ul>
+
+                        <p style="margin-top: 10px; font-weight: bold; color: #7dd3fc;">
+                            💡 Dica: um caçador forte mantém o corpo hidratado.
+                        </p>
                     </div>
 
                     <div class="help-section">

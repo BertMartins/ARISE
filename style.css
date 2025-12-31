@@ -1625,6 +1625,77 @@
             background: var(--primary);
         }
 
+        /* ===== HIDRATAÇÃO ===== */
+        .water-container {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, rgba(0, 212, 255, 0.08), rgba(0, 0, 0, 0.3));
+            border: 1px solid rgba(0, 212, 255, 0.25);
+        }
+
+        .water-container h4 {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: #7dd3fc;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Barra */
+        .water-bar {
+            width: 100%;
+            height: 14px;
+            background: #0f172a;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .water-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00d4ff, #00ffb3);
+            transition: width 0.4s ease;
+        }
+
+        .water-text {
+            font-size: 0.85rem;
+            color: #cbd5f5;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        /* BOTÕES */
+        .water-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .water-buttons button {
+            background: #0f172a;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: #e5f6ff;
+            padding: 8px 0;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .water-buttons button:hover {
+            background: #00d4ff;
+            color: #000;
+            transform: translateY(-1px);
+        }
+
+        .water-buttons button:active {
+            transform: scale(0.95);
+        }
+
         /* Responsive */
         @media (max-width: 600px) {
             .header {

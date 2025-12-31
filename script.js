@@ -30,7 +30,7 @@
                     oscillator.frequency.setValueAtTime(659.25, now + 0.1); // E5
                     oscillator.frequency.setValueAtTime(783.99, now + 0.2); // G5
                     gainNode.gain.setValueAtTime(0.3, now);
-                    gainNode.gain.exponentialDecayTo = 0.01;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);    
                     gainNode.gain.setValueAtTime(0.01, now + 0.4);
                     oscillator.type = 'sine';
                     oscillator.start(now);
@@ -121,10 +121,16 @@
                 weight: null,
                 country: 'America/Sao_Paulo'
             },
+            water: {
+                goal: 0,
+                current: 0,
+                completed: false,
+                type: 'daily'
+            },
             quests: [
-                { id: 1, title: 'Beber 2L de água', xp: 20, stat: 'vitality', type: 'daily', completed: false },
-                { id: 2, title: 'Treinar por 30 minutos', xp: 50, stat: 'strength', type: 'daily', completed: false },
-                { id: 3, title: 'Estudar por 1 hora', xp: 40, stat: 'knowledge', type: 'daily', completed: false },
+                { id: 1, title: 'Treinar por 30 minutos', xp: 50, stat: 'strength', type: 'daily', completed: false },
+                { id: 2, title: 'Estudar por 1 hora', xp: 40, stat: 'knowledge', type: 'daily', completed: false },
+                { id: 3, title: 'Correr por 10 minutos', xp: 25, stat: 'resistance', type: 'daily', completed: false },
                 { id: 4, title: 'Dormir 7+ horas', xp: 30, stat: 'vitality', type: 'daily', completed: false },
                 { id: 5, title: 'Meditar por 10 minutos', xp: 25, stat: 'discipline', type: 'daily', completed: false }
             ],
@@ -177,11 +183,35 @@
                                 ...defaultData.player.stats,
                                 ...parsed.player?.stats
                             }
+                        },
+                        water: {
+                            ...defaultData.water,
+                            ...parsed.water
                         }
                     };
                 }
             } catch (e) {
                 console.error('Erro ao carregar dados:', e);
+            }
+
+            if (!gameData.water.goal || gameData.water.goal === 0) {
+                gameData.water.goal = calculateWaterGoal(gameData.player.weight);
+            }
+
+            if (!gameData.water.current) gameData.water.current = 0;
+            if (!gameData.water.completed) gameData.water.completed = false;
+
+            const percent = Math.min(
+                100,
+                (gameData.water.current / gameData.water.goal) * 100
+            );
+
+            const bar = document.getElementById('waterFill');
+            const text = document.getElementById('waterText');
+
+            if (bar && text) {
+                bar.style.width = percent + '%';
+                text.textContent = `${gameData.water.current}ml / ${gameData.water.goal}ml`;
             }
 
             checkStreak();
@@ -887,15 +917,30 @@
         }
 
         function confirmReset() {
-            showConfirm('Tem certeza que deseja resetar TODO o seu progresso? Esta ação não pode ser desfeita!', () => {
-                gameData = JSON.parse(JSON.stringify(defaultData));
-                saveData();
-                updateUI();
-                closeModal('dataModal');
-                showToast('Progresso Resetado', 'Começando do zero!', 'warning');
-                playSound('error');
-            });
+            showConfirm(
+                'Tem certeza que deseja resetar TODO o seu progresso? Esta ação não pode ser desfeita!',
+                () => {
+
+                    gameData = JSON.parse(JSON.stringify(defaultData));
+                    gameData.water.goal = calculateWaterGoal(gameData.player.weight);
+                    gameData.water.current = 0;
+                    gameData.water.completed = false;
+
+                    initWeeklyChallenge();
+
+                    saveData();
+
+                    updateWaterUI();
+                    updateWeeklyChallenge();
+                    updateUI();
+
+                    closeModal('dataModal');
+                    showToast('Progresso Resetado', 'Começando do zero!', 'warning');
+                    playSound('error');
+                }
+            );
         }
+
 
         // ========== LEVEL UP OVERLAY ==========
         function showLevelUp() {
@@ -1044,36 +1089,54 @@
             const lastReset = gameData.lastResetDate;
 
             if (lastReset !== today) {
-                // Check if there were incomplete daily quests yesterday (apply penalty)
+
                 if (lastReset) {
+
+                    // Missões diárias normais não concluídas
                     const incompleteDailyQuests = gameData.quests.filter(q =>
-                        q.type === 'daily' && !q.completed && !q.isPenalty
+                        q.type === 'daily' &&
+                        !q.completed &&
+                        !q.isPenalty
                     );
 
-                    if (incompleteDailyQuests.length > 0) {
+                    let missedCount = incompleteDailyQuests.length;
+
+                    // 💧 Hidratação conta como missão diária
+                    if (!gameData.water.completed) {
+                        missedCount++;
+                    }
+
+                    if (missedCount > 0) {
                         gameData.pendingPenalty = true;
-                        gameData.missedQuestsCount = incompleteDailyQuests.length;
+                        gameData.missedQuestsCount = missedCount;
                     }
                 }
 
-                // Reset daily quests
+                // =========================
+                // 🔄 RESET DAS MISSÕES
+                // =========================
                 gameData.quests.forEach(q => {
                     if (q.type === 'daily' && !q.isPenalty) {
                         q.completed = false;
                     }
                 });
 
-                // Remove old penalty quests from previous days
+                // 💧 Reset da hidratação
+                gameData.water.current = 0;
+                gameData.water.completed = false;
+
+                // Remove penalidades antigas
                 gameData.quests = gameData.quests.filter(q => !q.isPenalty);
 
+                // Atualiza data
                 gameData.lastResetDate = today;
+
                 saveData();
             }
         }
 
         // ========== PENALTY SYSTEM ==========
         const penaltyTemplates = [
-            { title: '⚠️ PENALIDADE: Beber 3L de água', xp: 30, stat: 'vitality' },
             { title: '⚠️ PENALIDADE: 50 flexões', xp: 40, stat: 'strength' },
             { title: '⚠️ PENALIDADE: 100 abdominais', xp: 45, stat: 'strength' },
             { title: '⚠️ PENALIDADE: Correr 3km', xp: 50, stat: 'resistance' },
@@ -1131,9 +1194,15 @@
         }
 
         function getPenaltyWarning() {
-            const dailyQuests = gameData.quests.filter(q => q.type === 'daily' && !q.isPenalty);
-            const incompleteDailyQuests = dailyQuests.filter(q => !q.completed);
-            return incompleteDailyQuests.length;
+            // Missões diárias normais
+            const dailyQuests = gameData.quests.filter(
+                q => q.type === 'daily' && !q.isPenalty && !q.completed
+            );
+
+            // 💧 Hidratação conta como missão diária
+            const waterPending = gameData.water.completed ? 0 : 1;
+
+            return dailyQuests.length + waterPending;
         }
 
         // ========== WEEKLY CHALLENGE SYSTEM ==========
@@ -1441,13 +1510,33 @@
             gameData.player.height = height;
             gameData.player.weight = weight;
 
+            if (weight) {
+                const newGoal = calculateWaterGoal(weight);
+
+                // Se mudou a meta, atualiza
+                if (gameData.water.goal !== newGoal) {
+                    gameData.water.goal = newGoal;
+
+                    // Se já tinha bebido mais que a nova meta
+                    if (gameData.water.current > newGoal) {
+                        gameData.water.current = newGoal;
+                        gameData.water.completed = true;
+                    } else {
+                        gameData.water.completed = false;
+                    }
+                }
+            }
+
             saveData();
+            updateWaterUI();
             updateUI();
             updateClock();
+
             closeModal('profileModal');
             showToast('Perfil Atualizado!', 'Suas informações foram salvas', 'success');
             playSound('complete');
         }
+
 
         function calculateBMI(height, weight) {
             if (!height || !weight || height <= 0 || weight <= 0) return null;
@@ -1491,53 +1580,98 @@
             }
         }
 
-        // ========== INIT ==========
-        document.addEventListener('DOMContentLoaded', () => {
+        function calculateWaterGoal(weight) {
+            if (!weight || weight < 30 || weight > 300) return 2000;
+            return Math.round(weight * 35);
+        }
 
-            // =========================
-            // INICIALIZAÇÃO GERAL
-            // =========================
+        function drinkWater(amount) {
+            const water = gameData.water;
+
+            water.current += amount;
+
+            if (water.current > water.goal) {
+                water.current = water.goal;
+            }
+
+            const progress = Math.round((water.current / water.goal) * 100);
+
+            document.getElementById('waterFill').style.width = progress + '%';
+            document.getElementById('waterText').textContent =
+                `${water.current}ml / ${water.goal}ml`;
+
+            if (water.current >= water.goal && !water.completed) {
+                water.completed = true;
+
+                // XP
+                addXP(30, 'Hidratação completa');
+
+                // Status
+                gameData.player.stats.vitality += 2;
+
+                incrementWeeklyProgress('vitality');
+
+                // Histórico
+                addHistory('quest', 'Hidratação diária completa', 30);
+
+                showSystemNotification(
+                    '💧',
+                    'Missão concluída: Hidratação diária!'
+                );
+
+                playSound('achievement');
+            }
+
+            saveData();
+            updateUI();
+        }
+
+        function updateWaterUI() {
+            const water = gameData.water;
+
+            const percent = Math.min(
+                100,
+                (water.current / water.goal) * 100
+            );
+
+            const bar = document.getElementById('waterFill');
+            const text = document.getElementById('waterText');
+
+            if (bar && text) {
+                bar.style.width = percent + '%';
+                text.textContent = `${water.current}ml / ${water.goal}ml`;
+            }
+        }
+
+     document.addEventListener('DOMContentLoaded', () => {
             createParticles();
 
-            loadData();             
-            initWeeklyChallenge();   
+            loadData();
+            initWeeklyChallenge();
             checkDailyReset();
             checkPenalty();
             checkFailureStatus();
 
+            if (!gameData.water.goal || gameData.water.goal === 0) {
+                gameData.water.goal = calculateWaterGoal(gameData.player.weight);
+            }
+
+            updateWaterUI();
             updateWeeklyChallenge();
             updateUI();
 
-            // =========================
-            // RELÓGIO
-            // =========================
             updateClock();
             setInterval(updateClock, 1000);
-
-            // Atualiza o desafio semanal a cada minuto
             setInterval(updateWeeklyChallenge, 60000);
 
-            // =========================
-            // NOTIFICAÇÃO INICIAL
-            // =========================
-            setTimeout(() => {
-                showWelcomeNotification();
-            }, 1500);
+            setTimeout(showWelcomeNotification, 1500);
 
-            // =========================
-            // FECHAR MODAIS
-            // =========================
             document.querySelectorAll('.modal-overlay').forEach(overlay => {
                 overlay.addEventListener('click', e => {
-                    if (e.target === overlay) {
-                        overlay.classList.remove('active');
-                    }
+                    if (e.target === overlay) overlay.classList.remove('active');
                 });
             });
 
-            // =========================
-            // FECHAR NOTIFICAÇÃO DO SISTEMA
-            // =========================
             document.getElementById('systemNotification')
                 ?.addEventListener('click', e => {
                     if (e.target.id === 'systemNotification') {
@@ -1545,9 +1679,6 @@
                     }
                 });
 
-            // =========================
-            // INPUTS
-            // =========================
             document.getElementById('nameInput')
                 ?.addEventListener('keypress', e => {
                     if (e.key === 'Enter') saveName();
